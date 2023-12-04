@@ -1,4 +1,4 @@
-import AWS from "aws-sdk"
+import { PutObjectCommandOutput, S3 } from '@aws-sdk/client-s3';
 
 function hashFileName(fileName: string) {
     const extension = fileName.split(".").pop()
@@ -9,39 +9,38 @@ function hashFileName(fileName: string) {
     return `${hash}.${extension}`
 }
 
-export async function uploadToS3(file: File) {
-    try {
-        AWS.config.update({
-            accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
-        })
-        const s3 = new AWS.S3({
-            params: {
-                Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME
-            },
-            region: process.env.NEXT_PUBLIC_S3_BUCKET_REGION
-        })
-        const fileKey = `uploads/${Date.now().toString()}-${hashFileName(file.name)}`
-        const params = {
-            Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
-            Key: fileKey,
-            Body: file,
+export async function uploadToS3(file: File): Promise<{ fileKey: string; fileName: string }> {
+    return new Promise((resolve, reject) => {
+        try {
+            const s3 = new S3({
+                region: process.env.NEXT_PUBLIC_S3_BUCKET_REGION,
+                credentials: {
+                    accessKeyId: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID!,
+                    secretAccessKey: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY!,
+                },
+            })
+
+            const fileKey = `uploads/${Date.now().toString()}-${hashFileName(file.name)}`
+            const params = {
+                Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
+                Key: fileKey,
+                Body: file,
+            }
+            s3.putObject(
+                params,
+                (err: any, data: PutObjectCommandOutput | undefined) => {
+                    return resolve({
+                        fileKey,
+                        fileName: file.name,
+                    })
+                }
+            )
+            console.log("File uploaded successfully.", fileKey)
+        } catch (error) {
+            console.log("Error uploading file.", error)
+            reject(error)
         }
-        const upload = s3.putObject(params).on('httpUploadProgress', function (evt) {  
-            console.log('uploading to s3 ...', parseInt(((evt.loaded * 100) / evt.total).toString(), 10), '%');
-        }).promise()
-
-        await upload.then(data => {
-            console.log('upload successful: ', fileKey)
-        })
-
-        return Promise.resolve({
-            fileKey,
-            fileName: file.name,
-        })
-    } catch {
-        
-    }
+    })
 }
 
 export function getS3Url(fileKey: string){
