@@ -7,7 +7,7 @@ export async function POST(req: Request, res: Response) {
         const {fileKey, fileName} = body
         console.log(fileKey, fileName)
         return NextResponse.json(
-            { data: body },
+            { message: 'success' },
             { status: 200 }
         );
     } catch (error) {
