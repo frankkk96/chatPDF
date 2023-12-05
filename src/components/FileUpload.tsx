@@ -1,37 +1,59 @@
-'use client';
+"use client";
 import { uploadToS3 } from '@/lib/s3';
-import { Inbox } from 'lucide-react';
+import { Axis3DIcon, Inbox } from 'lucide-react';
 import React from 'react'
 import { useDropzone } from 'react-dropzone'
+import axios from 'axios'
+import { useMutation } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
 const FileUpload = () => {
-    const {getRootProps, getInputProps} = useDropzone({
-        accept: {'application/pdf': ['.pdf']},
+    const { mutate } = useMutation({
+        mutationFn: async ({ fileKey, fileName }: { fileKey: string; fileName: string }) => {
+            const response = await axios.post("/api/create-chat", { fileKey, fileName })
+            return response.data
+        }
+    })
+
+    const { getRootProps, getInputProps } = useDropzone({
+        accept: { 'application/pdf': ['.pdf'] },
         maxFiles: 1,
         onDrop: async (acceptedFiles) => {
             console.log(acceptedFiles)
             const file = acceptedFiles[0]
             if (file.size > 10 * 1024 * 1024) {
-                alert('File size exceeds 10MB')
+                toast.error('File size exceeds 10MB')
                 return
             }
             try {
                 const data = await uploadToS3(file)
-                console.log('data', data)
+                if (!data?.fileKey || !data.fileName){
+                    toast.error('Error uploading file')
+                    return
+                }
+                mutate(data, {
+                    onSuccess: (data) => {
+                        console.log(data)
+                    },
+                    onError: (error) => {
+                        console.error(error)
+                    }
+                })
             } catch (error) {
-                console.log(error)
+                console.error(error)
             }
         }
     })
+
     return (
         <div className='p-2 bg-white rounded-xl'>
             <div {...getRootProps({
                 className: 'border-dashed border-2 rounded-xl cursor-pointer bg-gray-50 py-8 flex justify-center items-center flex-col'
-                })}
+            })}
             >
-                <input {...getInputProps()}/>
+                <input {...getInputProps()} />
                 <div>
-                    <Inbox className='w-10 h10 text-blue-500 content-center'/>
+                    <Inbox className='w-10 h10 text-blue-500 content-center' />
                     <p className='mt-2 text-sm text-slate-400'>drop file here</p>
                 </div>
             </div>

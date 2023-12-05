@@ -1,4 +1,5 @@
 import { PutObjectCommandOutput, S3 } from '@aws-sdk/client-s3';
+import toast from 'react-hot-toast';
 
 function hashFileName(fileName: string) {
     const extension = fileName.split(".").pop()
@@ -35,9 +36,9 @@ export async function uploadToS3(file: File): Promise<{ fileKey: string; fileNam
                     })
                 }
             )
-            console.log("File uploaded successfully.", fileKey)
+            toast.success(`File uploaded successfully. ${fileKey}`)
         } catch (error) {
-            console.log("Error uploading file.", error)
+            toast.error(`Error uploading file. ${error}`)
             reject(error)
         }
     })
