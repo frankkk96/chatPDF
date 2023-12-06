@@ -10,38 +10,30 @@ function hashFileName(fileName: string) {
     return `${hash}.${extension}`
 }
 
-export async function uploadToS3(file: File): Promise<{ fileKey: string; fileName: string }> {
-    return new Promise((resolve, reject) => {
-        try {
-            const s3 = new S3({
-                region: process.env.NEXT_PUBLIC_S3_BUCKET_REGION,
-                credentials: {
-                    accessKeyId: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID!,
-                    secretAccessKey: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY!,
-                },
-            })
-
-            const fileKey = `uploads/${Date.now().toString()}-${hashFileName(file.name)}`
-            const params = {
-                Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
-                Key: fileKey,
-                Body: file,
-            }
-            s3.putObject(
-                params,
-                (err: any, data: PutObjectCommandOutput | undefined) => {
-                    return resolve({
-                        fileKey,
-                        fileName: file.name,
-                    })
-                }
-            )
-            toast.success(`File uploaded successfully. ${fileKey}`)
-        } catch (error) {
-            toast.error(`Error uploading file. ${error}`)
-            reject(error)
-        }
+export async function uploadToS3(file: File) {
+    const s3 = new S3({
+        region: process.env.NEXT_PUBLIC_S3_BUCKET_REGION,
+        credentials: {
+            accessKeyId: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY!,
+        },
     })
+    const fileKey = `uploads/${Date.now().toString()}-${hashFileName(file.name)}`
+    const params = {
+        Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
+        Key: fileKey,
+        Body: file,
+    }
+    try {
+        await s3.putObject(params)
+        toast.success(`File uploaded successfully. ${fileKey}`)
+        return {
+            fileKey,
+            fileName: file.name,
+        }
+    } catch (err) {
+        toast.error(`Error uploading file. ${err}`)
+    }
 }
 
 export function getS3Url(fileKey: string){

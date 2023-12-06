@@ -9,11 +9,12 @@ import toast from 'react-hot-toast';
 
 const FileUpload = () => {
     const [uploading, setUploading] = React.useState(false)
+    const createChat = async ({ fileKey, fileName }: { fileKey: string; fileName: string }) => {
+        const response = await axios.post("/api/create-chat", { fileKey, fileName })
+        return response.data
+    }
     const { mutate, isPending } = useMutation({
-        mutationFn: async ({ fileKey, fileName }: { fileKey: string; fileName: string }) => {
-            const response = await axios.post("/api/create-chat", { fileKey, fileName })
-            return response.data
-        }
+        mutationFn: createChat
     })
 
     const { getRootProps, getInputProps } = useDropzone({
@@ -35,7 +36,8 @@ const FileUpload = () => {
                 }
                 mutate(data, {
                     onSuccess: (data) => {
-                        toast.success(data.message)
+                        console.log(data)
+                        // toast.success(data.message)
                     },
                     onError: (error) => {
                         toast.error("Error creating chat")
