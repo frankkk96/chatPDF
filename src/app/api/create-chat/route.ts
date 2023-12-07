@@ -1,15 +1,31 @@
 import { loadS3IntoPinecone } from "@/lib/pinecone"
 import { NextResponse } from "next/server"
+import { db } from "@/lib/db"
+import { auth } from "@clerk/nextjs"
+import { chats } from "@/lib/db/schema"
+import { getS3Url } from "@/lib/s3"
 
 // route to /api/create-chat
 export async function POST(req: Request, res: Response) {
+    const { userId } = await auth()
+    if (!userId) {
+        return NextResponse.json({error: "not authenticated"}, {status: 401})
+    }
     try {
         const body = await req.json()
         const {fileKey, fileName} = body
         console.log(fileKey, fileName)
-        const pages = await loadS3IntoPinecone(fileKey)
+        await loadS3IntoPinecone(fileKey)
+        const chatId = await db.insert(chats).values({
+            fileKey: fileKey,
+            pdfName: fileName,
+            pdfUrl: getS3Url(fileKey),
+            userId: userId,
+        }).returning({
+            insertedId: chats.id,
+        })
         return NextResponse.json(
-            { pages: pages },
+            { chatId: chatId[0].insertedId },
             { status: 200 }
         );
     } catch (error) {

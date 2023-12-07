@@ -33,7 +33,7 @@ export async function downloadFromS3(fileKey: string) {
             const file = fs.createWriteStream(fileName)
             // 第三版代码，会在pipe写完之前就返回了
             // @ts-ignore
-            // await obj.Body.pipe(file)
+            // obj.Body.pipe(file)
             //     .on('finish', () => {
             //         console.log("wrote to file system", fileName);
             //     })
@@ -45,7 +45,7 @@ export async function downloadFromS3(fileKey: string) {
             // 第二版代码，最好用
             await new Promise((resolve, reject) => {
                 // @ts-ignore
-                obj.Body?.pipe(file)
+                obj.Body.pipe(file)
                     .on('finish', () => {
                         console.log("wrote to file system", fileName)
                         resolve(fileName)
