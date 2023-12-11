@@ -26,6 +26,7 @@
     "drizzle-kit": "^0.20.4",
     "drizzle-orm": "^0.29.0",
     "dropzone": "^6.0.0-beta.2",
+    "fs": "^0.0.1-security",
     "langchain": "^0.0.201",
     "lucide-react": "^0.293.0",
     "md5": "^2.3.0",
@@ -38,7 +39,8 @@
     "react-dropzone": "^14.2.3",
     "react-hot-toast": "^2.4.1",
     "tailwind-merge": "^2.0.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zlib": "^1.0.5"
   },
   "devDependencies": {
     "@types/node": "^20",
