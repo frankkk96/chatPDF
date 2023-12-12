@@ -14,7 +14,7 @@ type Props = {
 }
 
 const ChatComponent = ({ chatId }: Props) => {
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['chat', chatId],
     queryFn: async () => {
       const response = await axios.post<Message[]>('/api/get-messages', {chatId})
@@ -46,7 +46,7 @@ const ChatComponent = ({ chatId }: Props) => {
         <h3 className='text-xl font-bold'>Chat</h3>
       </div>
       {/* message list */}
-      <MessageList messages={messages} />
+      <MessageList messages={messages} isLoading={isLoading} />
       {/* new messages */}
       <form onSubmit={handleSubmit} className='sticky bottom inset-x-0 px-2 py-8 bg-white'>
         <div className='flex'>
