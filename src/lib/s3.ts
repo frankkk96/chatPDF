@@ -12,15 +12,15 @@ function hashFileName(fileName: string) {
 
 export async function uploadToS3(file: File) {
     const s3 = new S3({
-        region: process.env.NEXT_PUBLIC_S3_BUCKET_REGION,
+        region: process.env.S3_BUCKET_REGION,
         credentials: {
-            accessKeyId: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID!,
-            secretAccessKey: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY!,
+            accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
         },
     })
     const fileKey = `uploads/${Date.now().toString()}-${hashFileName(file.name)}`
     const params = {
-        Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
+        Bucket: process.env.S3_BUCKET_NAME!,
         Key: fileKey,
         Body: file,
     }
@@ -37,6 +37,6 @@ export async function uploadToS3(file: File) {
 }
 
 export function getS3Url(fileKey: string){
-    const url = `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_S3_BUCKET_REGION}.amazonaws.com/${fileKey}`
+    const url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com/${fileKey}`
     return url
 }
